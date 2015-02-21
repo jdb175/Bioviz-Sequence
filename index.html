@@ -5,8 +5,12 @@
 <body>
 <!--<script src="http://d3js.org/d3.v3.min.js"></script>-->
 <script>
-  var seq1 = "GAATTCAGTTA"
-  var seq2 = "GGATCGA"
+  //http://www.uniprot.org/uniprot/Q197F2
+  var seq1 = "MSFKVYDPIAELIATQFPTSNPDLQIINNDVLVVSPHKITLPMGPQNAGDVTNKAYVDQAVMSAAVPVASSTTVGTIQMAGDLEGSSGTNPIIAANKITLNKLQKIGPKMVIGNPNSDWNNTQEIELDSSFRIVDNRLNAGIVPISSTDPNKSNTVIPAPQQNGLFYLDSSGRVWVWAEHYYKCITPSRYISKWMGVGDFQELTVGQSVMWDSGRPSIETVSTQGLEVEWISSTNFTLSSLYLIPIVVKVTICIPLLGQPDQMAKFVLYSVSSAQQPRTGIVLTTDSSRSSAPIVSEYITVNWFEPKSYSVQLKEVNSDSGTTVTICSDKWLANPFLDCWITIEEVG";
+  //http://www.uniprot.org/uniprot/Q197F3
+  var seq2 = "MEAKNITIDNTTYNFFKFYNINQPLTNLKYLNSERLCFSNAVMGKIVDDASTITITYHRVYFGISGPKPRQVADLGEYYDVNELLNYDTYTKTQEFAQKYNSLVKPTIDAKNWSGNELVLLVGNEWYCKTFGKAGSKNVFLYNMIPTIYRDEPQHQEQILKKFMFFNATKNVEQNPNFLDNVPEEYYHLLLPKSWVEKNLSDKYRKIMETEHKPLVFSCEPAFSFGLCRNTQDKNESYQLSLCLYEREKPRDAEIVWAAKYDELAAMVRDYLKKTPEFKKYRSFISCMKGLSWKNNEIGDKDGPKLYPKVIFNRKKGEFVTIFTKDDDVEPETIEDPRTILDRRCVVQAALRLESVFVHNKVAIQLRINDVLISEWKEASSKPQPLILRRHRFTKPSSSVAKSTSPSLRNSGSDESDLNQSDSDKEDERVVPVPKTKRIVKTVKLPN";
+  //http://www.uniprot.org/uniprot/Q91G85
+  var seq3 = "MIKLFCVLAAFISINSACQSSHQQREEFTVATYHSSSICTTYCYSNCVVASQHKGLNVESYTCDKPDPYGRETVCKCTLIKCHDI";
   var residueScore = 2;
   var gapPenalty = -2;
   var misMatchPenalty = -1;
@@ -15,63 +19,106 @@
 
   function align() {
     //initialize arrays
-    for(var i = 0; i <= seq2.length; ++i) {
+    for(var i = 0; i < seq3.length; ++i) {
       scores[i] = new Array;
-      scores[i][0] = {val: 0};
-    }
-    for(var i = 0; i <= seq1.length; ++i) {
-      scores[0][i] = {val: 0};
+      for(var j = 0; j < seq2.length; ++j) {
+        scores[i][j] = new Array;
+      }
     }
 
     //set scores
-    for(var i = 1; i <= seq2.length; ++i) {
-      for(var j = 1; j <= seq1.length; ++j) {
-        var oldDiag = scores[i-1][j-1].val, //No gap
-            oldGap1 = scores[i][j-1].val, //There is a gap in seq1
-            oldGap2 = scores[i-1][j].val; //There is a gap in seq2
+    for(var i = 0; i < seq3.length; ++i) {
+      for(var j = 0; j < seq2.length; ++j) {
+        for(var k = 0; k < seq1.length; ++k) {
+          var oldDiag = ( i > 0 && j > 0 && k > 0) ? scores[i-1][j-1][k-1].val : 0, //No gap
+              oldGap1 = ( k > 0 ) ? scores[i][j][k-1].val : 0, //There is a gap in seq1
+              oldGap2 = ( j > 0 ) ? scores[i][j-1][k].val : 0; //There is a gap in seq2
+              oldGap3 = ( i > 0 ) ? scores[i-1][j][k].val : 0; //There is a gap in seq2
 
-        var diag = oldDiag + ((seq2[i-1] == seq1[j-1]) ? residueScore : misMatchPenalty);
-        var gap1 = oldGap1 + gapPenalty
-        var gap2 = oldGap2 + gapPenalty
-        if( diag >= gap1 && diag >= gap2 ) {
-          scores[i][j] ={val: diag, point:"diag"};
-        } else if ( gap1 >= gap2 ) {
-          scores[i][j] ={val: gap1, point:"gap1"};
-        } else {
-          scores[i][j] ={val: gap2, point:"gap2"};
+          var diag = oldDiag + ((seq2[j] == seq1[k] && seq2[j] == seq3[i]) ? residueScore : misMatchPenalty);
+          var gap1 = oldGap1 + gapPenalty
+          var gap2 = oldGap2 + gapPenalty
+          var gap3 = oldGap3 + gapPenalty
+          if( diag >= gap1 && diag >= gap2 && diag >= gap3 ) {
+            scores[i][j][k] ={val: diag, point:"diag"};
+          } else if ( gap1 >= gap2 && gap1 >=  gap2) {
+            scores[i][j][k] ={val: gap1, point:"gap1"};
+          } else if ( gap2 >= gap3 ) {
+            scores[i][j][k] ={val: gap2, point:"gap2"};
+          } else {
+            scores[i][j][k] ={val: gap3, point:"gap3"};
+          }
         }
       }
     }
-    printArray();
-
+    //printArray();
+    //return;
     //Follow array back
-    var i = seq2.length;
-    var j = seq1.length;
+    var i = seq3.length-1;
+    var j = seq2.length-1;
+    var k = seq1.length-1;
     var seq1_a = "";
     var seq2_a = "";
-    while(i > 0 && j > 0) {
-      var cur = scores[i][j];
+    var seq3_a = "";
+    while(i >= 0 && j >= 0 && k >= 0) {
+      var cur = scores[i][j][k];
       switch(cur.point) {
         case "diag":
-          seq1_a = seq1[j-1] + seq1_a;
-          seq2_a = seq2[i-1] + seq2_a;
+          seq1_a = seq1[k] + seq1_a;
+          seq2_a = seq2[j] + seq2_a;
+          seq3_a = seq3[i] + seq3_a;
           --i;
           --j;
+          --k;
+          break;
+        case "gap3":
+          seq1_a = seq1[k] + seq1_a;
+          seq2_a = seq2[j] + seq2_a;
+          seq3_a = "_"+seq3_a;
+          --j;
+          --k;
           break;
         case "gap2":
-          seq1_a = "_"+seq1_a;
-          seq2_a = seq2[i-1] + seq2_a;
+          seq1_a = seq1[k]+seq1_a;
+          seq2_a = "_" + seq2_a;
+          seq3_a = seq3[i] + seq3_a;
           --i;
+          --k;
           break;
         case "gap1":
-          seq1_a = seq1[j-1] + seq1_a;
-          seq2_a = "_"+seq2_a;
+          seq1_a = "_" + seq1_a;
+          seq2_a = seq2[j] + seq2_a;
+          seq3_a = seq3[i] + seq3_a;
+          --i;
           --j;
           break;
+      }
+    }
+
+    //Deal with early ends
+    while(i >= 0 || j >= 0 || k >= 0) {
+      if(i >= 0) {
+        seq3_a = seq3[i] + seq3_a;
+        --i;
+      } else {
+        seq3_a = "_" + seq3_a;
+      }
+      if(j >= 0) {
+        seq2_a = seq2[j] + seq2_a;
+        --j;
+      } else {
+        seq2_a = "_" + seq2_a;
+      }
+      if(k >= 0) {
+        seq1_a = seq1[k] + seq1_a;
+        --k;
+      } else {
+        seq1_a = "_" + seq1_a;
       }
     }
     seq1 = seq1_a;
     seq2 = seq2_a;
+    seq3 = seq3_a;
   }
 
   function printArray() {
