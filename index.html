@@ -6,14 +6,18 @@
 <!--<script src="http://d3js.org/d3.v3.min.js"></script>-->
 <script>
   //http://www.uniprot.org/uniprot/Q197F2
-  var seq1 = "MSFKVYDPIAELIATQFPTSNPDLQIINNDVLVVSPHKITLPMGPQNAGDVTNKAYVDQAVMSAAVPVASSTTVGTIQMAGDLEGSSGTNPIIAANKITLNKLQKIGPKMVIGNPNSDWNNTQEIELDSSFRIVDNRLNAGIVPISSTDPNKSNTVIPAPQQNGLFYLDSSGRVWVWAEHYYKCITPSRYISKWMGVGDFQELTVGQSVMWDSGRPSIETVSTQGLEVEWISSTNFTLSSLYLIPIVVKVTICIPLLGQPDQMAKFVLYSVSSAQQPRTGIVLTTDSSRSSAPIVSEYITVNWFEPKSYSVQLKEVNSDSGTTVTICSDKWLANPFLDCWITIEEVG";
+ /* var seq1 = "MSFKVYDPIAELIATQFPTSNPDLQIINNDVLVVSPHKITLPMGPQNAGDVTNKAYVDQAVMSAAVPVASSTTVGTIQMAGDLEGSSGTNPIIAANKITLNKLQKIGPKMVIGNPNSDWNNTQEIELDSSFRIVDNRLNAGIVPISSTDPNKSNTVIPAPQQNGLFYLDSSGRVWVWAEHYYKCITPSRYISKWMGVGDFQELTVGQSVMWDSGRPSIETVSTQGLEVEWISSTNFTLSSLYLIPIVVKVTICIPLLGQPDQMAKFVLYSVSSAQQPRTGIVLTTDSSRSSAPIVSEYITVNWFEPKSYSVQLKEVNSDSGTTVTICSDKWLANPFLDCWITIEEVG";
   //http://www.uniprot.org/uniprot/Q197F3
   var seq2 = "MEAKNITIDNTTYNFFKFYNINQPLTNLKYLNSERLCFSNAVMGKIVDDASTITITYHRVYFGISGPKPRQVADLGEYYDVNELLNYDTYTKTQEFAQKYNSLVKPTIDAKNWSGNELVLLVGNEWYCKTFGKAGSKNVFLYNMIPTIYRDEPQHQEQILKKFMFFNATKNVEQNPNFLDNVPEEYYHLLLPKSWVEKNLSDKYRKIMETEHKPLVFSCEPAFSFGLCRNTQDKNESYQLSLCLYEREKPRDAEIVWAAKYDELAAMVRDYLKKTPEFKKYRSFISCMKGLSWKNNEIGDKDGPKLYPKVIFNRKKGEFVTIFTKDDDVEPETIEDPRTILDRRCVVQAALRLESVFVHNKVAIQLRINDVLISEWKEASSKPQPLILRRHRFTKPSSSVAKSTSPSLRNSGSDESDLNQSDSDKEDERVVPVPKTKRIVKTVKLPN";
   //http://www.uniprot.org/uniprot/Q91G85
   var seq3 = "MIKLFCVLAAFISINSACQSSHQQREEFTVATYHSSSICTTYCYSNCVVASQHKGLNVESYTCDKPDPYGRETVCKCTLIKCHDI";
+  */
+  var seq1 = "AACCCCA";
+  var seq2 = "AABA";
+  var seq3 = "AABA";
   var residueScore = 2;
-  var gapPenalty = -2;
-  var misMatchPenalty = -1;
+  var gapPenalty = -1;
+  var misMatchPenalty = -20;
   var scores = new Array();
   align();
 
@@ -31,28 +35,44 @@
       for(var j = 0; j < seq2.length; ++j) {
         for(var k = 0; k < seq1.length; ++k) {
           var oldDiag = ( i > 0 && j > 0 && k > 0) ? scores[i-1][j-1][k-1].val : 0, //No gap
-              oldGap1 = ( k > 0 ) ? scores[i][j][k-1].val : 0, //There is a gap in seq1
-              oldGap2 = ( j > 0 ) ? scores[i][j-1][k].val : 0; //There is a gap in seq2
-              oldGap3 = ( i > 0 ) ? scores[i-1][j][k].val : 0; //There is a gap in seq2
+              oldGap12 = ( k > 0 ) ? scores[i][j][k-1].val : 0, //There are gaps in seq1&2
+              oldGap13 = ( j > 0 ) ? scores[i][j-1][k].val : 0; //There are gaps in seq1&3
+              oldGap23 = ( i > 0 ) ? scores[i-1][j][k].val : 0; //There are gaps in seq2&3
+              oldGap2 = ( i > 0 && k > 0 ) ? scores[i-1][j][k-1].val : 0; //There is a gap in 1
+              oldGap1 = ( j > 0 && k > 0 ) ? scores[i][j-1][k-1].val : 0; //There is a gap in 2
+              oldGap3 = ( i > 0 && j > 0 ) ? scores[i-1][j-1][k].val : 0; //There is a gap in 3
 
+          //Calculate transition scores
           var diag = oldDiag + ((seq2[j] == seq1[k] && seq2[j] == seq3[i]) ? residueScore : misMatchPenalty);
           var gap1 = oldGap1 + gapPenalty
           var gap2 = oldGap2 + gapPenalty
           var gap3 = oldGap3 + gapPenalty
-          if( diag >= gap1 && diag >= gap2 && diag >= gap3 ) {
+          var gap13 = oldGap13 + 2*gapPenalty;
+          var gap12 = oldGap12 + 2*gapPenalty;
+          var gap23 = oldGap23 + 2*gapPenalty;
+
+          var max = Math.max(diag, gap1, gap2, gap3, gap13, gap13, gap23);
+
+          //Find max case
+          if( diag >= max ) {
             scores[i][j][k] ={val: diag, point:"diag"};
-          } else if ( gap1 >= gap2 && gap1 >=  gap2) {
+          } else if ( gap1 >= max ) {
             scores[i][j][k] ={val: gap1, point:"gap1"};
-          } else if ( gap2 >= gap3 ) {
+          } else if ( gap2 >= max ) {
             scores[i][j][k] ={val: gap2, point:"gap2"};
-          } else {
+          } else if ( gap3 >= max ){
             scores[i][j][k] ={val: gap3, point:"gap3"};
+          } else if ( gap13 >= max ){
+            scores[i][j][k] ={val: gap13, point:"gap13"};
+          } else if ( gap12 >= max ){
+            scores[i][j][k] ={val: gap12, point:"gap12"};
+          } else if ( gap23 >= max ){
+            scores[i][j][k] ={val: gap23, point:"gap23"};
           }
         }
       }
     }
-    //printArray();
-    //return;
+
     //Follow array back
     var i = seq3.length-1;
     var j = seq2.length-1;
@@ -60,8 +80,10 @@
     var seq1_a = "";
     var seq2_a = "";
     var seq3_a = "";
-    while(i >= 0 && j >= 0 && k >= 0) {
+    while(i > 0 || j > 0 || k > 0) {
       var cur = scores[i][j][k];
+      console.log(cur.val + " " + cur.point + "(" + i + "," + j + "," + k + ")");
+      //roll back based on current pointer switch
       switch(cur.point) {
         case "diag":
           seq1_a = seq1[k] + seq1_a;
@@ -92,11 +114,33 @@
           --i;
           --j;
           break;
-      }
+        case "gap12":
+          seq1_a = "_" + seq1_a;
+          seq2_a = "_" + seq2_a;
+          seq3_a = seq3[i] + seq3_a;
+          --i;
+          break;
+        case "gap13":
+          seq1_a = "_" + seq1_a;
+          seq2_a = seq2[j] + seq2_a;
+          seq3_a = "_" + seq3_a;
+          --j;
+          break;
+        case "gap23":
+          seq1_a = seq1[k] + seq1_a;
+          seq2_a = "_" + seq2_a;
+          seq3_a = "_" + seq3_a;
+          --k;
+          break;
+        }
+
+        console.log("\t"+seq1_a);
+        console.log("\t"+seq2_a);
+        console.log("\t"+seq3_a);
     }
 
     //Deal with early ends
-    while(i >= 0 || j >= 0 || k >= 0) {
+   /* while(i >= 0 || j >= 0 || k >= 0) {
       if(i >= 0) {
         seq3_a = seq3[i] + seq3_a;
         --i;
@@ -115,12 +159,13 @@
       } else {
         seq1_a = "_" + seq1_a;
       }
-    }
+    }*/
     seq1 = seq1_a;
     seq2 = seq2_a;
     seq3 = seq3_a;
   }
 
+  /* Only for 2d array
   function printArray() {
     var str = "        ";
     for(var k = 0; k < seq1.length; ++k) {
@@ -146,5 +191,5 @@
     }
 
     console.log(str);
-  }
+  }*/
 </script>
