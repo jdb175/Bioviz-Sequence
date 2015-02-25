@@ -2,7 +2,7 @@
 function align(seq1, seq2, seq3) {
   //initialize arrays
   var scores = new Array();
-  var residueScore = 7;
+  var residueScore = 3;
   var gapPenalty = -1;
   var misMatchPenalty = -1;
   for(var i = 0; i < seq1.length; ++i) {
@@ -127,22 +127,28 @@ function align(seq1, seq2, seq3) {
   //Deal with early ends
   while(i >= 0 || j >= 0 || k >= 0) {
     if(i >= 0) {
-      s1_a.unshift(seq1[i]);
+      s1_a = seq1[i] + s1_a;
+      aligns_1 = (seq1[i] == seq2[j] || seq1[i] == seq3[k]) ? "y" : "n" + aligns_1;
       --i;
     } else {
-      s1_a.unshift("-");
+      s1_a = "-" + s1_a;
+      aligns_1 = "g" + aligns_1;
     }
     if(j >= 0) {
-      s2_a.unshift(seq2[j]);
+      s2_a = seq2[j] + s2_a;
+      aligns_2 = (seq1[i] == seq2[j] || seq2[j] == seq3[k]) ? "y" : "n" + aligns_2;
       --j;
     } else {
-      s2_a.unshift("-");
+      s2_a = "-" + s2_a;
+      aligns_2 = "g" + aligns_2;
     }
     if(k >= 0) {
-      s3_a.unshift(seq3[k]);
+      aligns_3 = (seq3[k] == seq2[j] || seq1[i] == seq3[k]) ? "y" : "n" + aligns_3;
+      s3_a = seq3[k] + s3_a;
       --k;
     } else {
-      s3_a.unshift("-");
+      s3_a = "-" + s3_a;
+      aligns_3 = "g" + aligns_3;
     }
   }
 }
