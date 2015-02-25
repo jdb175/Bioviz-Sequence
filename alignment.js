@@ -70,55 +70,55 @@ function align(seq1, seq2, seq3) {
   var k = seq3.length-1;
   while(i >= 0 && j >= 0 && k >= 0) {
     var cur = scores[i][j][k];
-    aligns_1.unshift(cur.matches[0]);
-    aligns_2.unshift(cur.matches[1]);
-    aligns_3.unshift(cur.matches[2]);
+    aligns_1 = cur.matches[0] + aligns_1;
+    aligns_2 = cur.matches[1] + aligns_2;
+    aligns_3 = cur.matches[2] + aligns_3;
     switch(cur.point) {
       case "diag":
-        s1_a.unshift(seq1[i]);
-        s2_a.unshift(seq2[j]);
-        s3_a.unshift(seq3[k]);
+        s1_a = seq1[i] + s1_a;
+        s2_a = seq2[j] + s2_a;
+        s3_a = seq3[k] + s3_a;
         --i;
         --j;
         --k;
         break;
       case "gap3":
-        s1_a.unshift(seq1[i]);
-        s2_a.unshift(seq2[j]);
-        s3_a.unshift("-");
+        s1_a = seq1[i] + s1_a;
+        s2_a = seq2[j] + s2_a;
+        s3_a = "-" + s3_a;
         --i;
         --j;
         break;
       case "gap2":
-        s1_a.unshift(seq1[i]);
-        s2_a.unshift("-");
-        s3_a.unshift(seq3[k]);
+        s1_a = seq1[i] + s1_a;
+        s2_a = "-"  + s2_a;
+        s3_a = seq3[k] + s3_a;
         --i;
         --k;
         break;
       case "gap1":
-        s1_a.unshift("-");
-        s2_a.unshift(seq2[j]);
-        s3_a.unshift(seq3[k]);
+        s1_a = "-" + s1_a;
+        s2_a = seq2[j] + s2_a;
+        s3_a = seq3[k] + s3_a;
         --j;
         --k;
         break;
       case "gap13":
-        s1_a.unshift("-");
-        s2_a.unshift(seq2[j]);
-        s3_a.unshift("-");
+        s1_a = "-" + s1_a;
+        s2_a = seq2[j] + s2_a;
+        s3_a = "-" + s3_a;
         --j;
         break;
       case "gap23":
-        s1_a.unshift(seq1[i]);
-        s2_a.unshift("-");
-        s3_a.unshift("-");
+        s1_a = seq1[i] + s1_a;
+        s2_a = "-" + s2_a;
+        s3_a = "-" + s3_a;
         --i;
         break;
       case "gap12":
-        s1_a.unshift("-");
-        s2_a.unshift("-");
-        s3_a.unshift(seq3[k]);
+        s1_a = "-" + s1_a;
+        s2_a = "-" + s2_a;
+        s3_a = seq3[k] + s3_a;
         --k;
         break;
     }
@@ -130,19 +130,19 @@ function align(seq1, seq2, seq3) {
       s1_a.unshift(seq1[i]);
       --i;
     } else {
-      s1_a.unshift("_");
+      s1_a.unshift("-");
     }
     if(j >= 0) {
       s2_a.unshift(seq2[j]);
       --j;
     } else {
-      s2_a.unshift("_");
+      s2_a.unshift("-");
     }
     if(k >= 0) {
       s3_a.unshift(seq3[k]);
       --k;
     } else {
-      s3_a.unshift("_");
+      s3_a.unshift("-");
     }
   }
 }
