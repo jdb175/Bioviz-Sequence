@@ -17,11 +17,29 @@
     -ms-user-select:none;
     -o-user-select:none;
     user-select:none;
+  }
+
+  body {
     font-family: sans-serif;
+  }
+
+  .centerer {
+    font-size: 11px;
+    width:1060px;
+    margin:auto;
+  }
+
+  .detail {
+    margin: auto;
   }
 </style>
 <body>
-  <svg/>
+  <h2 align="center">Protein Alignment</h2>
+  <h4 align="center">(triphosphate nucleotidohydrolase)</h4>
+  <div class = "centerer">
+    <svg/>
+    <p>Check it out on <a href="https://github.com/jdb175/Bioviz-Sequence">Github</a>.</p>
+  </div>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="sequences.js"></script>
 <script src="alignment.js"></script>
@@ -33,7 +51,7 @@
 
   var margin = {top: 30, right: 10, bottom: 10, left: 10},
       width = 1060 - margin.left - margin.right,
-      height = 500 - margin.top - margin.bottom;
+      height = 300 - margin.top - margin.bottom;
   var lineHeight = 30;
 
   var maxLength = Math.max(s1_a.length, s2_a.length, s3_a.length);
@@ -53,17 +71,17 @@
   buildLine(g_1, s1_a, aligns_1, 1);
 
 
-  //Create main lines
-  var g_local1 = svg.append("g").attr("transform", "translate(0,"+100+")");
-  var g_local2 = svg.append("g").attr("transform", "translate(0,"+100+")");
-  var g_local3 = svg.append("g").attr("transform", "translate(0,"+100+")");
+  //Create detail view groups
+  var local_container = svg.append("g").attr("transform", "translate(0,"+140+")").attr("class", "detail")
+  var g_local1 = local_container.append("g");
+  var g_local2 = local_container.append("g");
+  var g_local3 = local_container.append("g");
 
-
+  //Create Brush
   var x = d3.scale.linear()
     .domain([0, maxLength])
     .range([0, width]);
 
-  //Create Brush
   var brush = d3.svg.brush()
     .x(x)
     .extent([0, 0])
@@ -76,7 +94,7 @@
   brushg.selectAll("rect")
     .attr("height", lineHeight*3);
 
-
+  //Handle brush snapping and detail view
   function brushed() {
     var extent0 = brush.extent(),
         extent1;
@@ -95,14 +113,18 @@
       extent1=[0,0];
     }
     d3.select(this).call(brush.extent(extent1));
+    //Now update detail view
     buildLine(g_local3, s3_a.slice(extent1[0], extent1[1]), aligns_3.slice(extent1[0], extent1[1]), 3);
     buildLine(g_local2, s2_a.slice(extent1[0], extent1[1]), aligns_2.slice(extent1[0], extent1[1]), 2);
-    buildLine(g_local1, s1_a.slice(extent1[0], extent1[1]), aligns_1.slice(extent1[0], extent1[1]), 1);
+    var l_width = buildLine(g_local1, s1_a.slice(extent1[0], extent1[1]), aligns_1.slice(extent1[0], extent1[1]), 1);
+    local_container.attr("transform", "translate("+((width-l_width)/2)+","+140+")");
   }
 
 
+  //Helper method to create one sequence of characters and rectangles
   function buildLine(group, letters, matches, offset){
     var textWidth = Math.min(width/letters.length, 40);
+    var l_width = textWidth*letters.length;
 
     group.selectAll("text").remove();
     group.selectAll("rect").remove();
@@ -133,5 +155,6 @@
       .attr("font-size", textWidth)
       .attr("x", function(d,i) { return i * textWidth })
       .attr("y", lineHeight*offset);
+    return l_width;
   }
 </script>
