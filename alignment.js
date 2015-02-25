@@ -30,16 +30,18 @@ function align(seq1, seq2, seq3) {
           _13 = (seq1[i] == seq3[k]) ? residueScore : misMatchPenalty,
           _23 = (seq2[j] == seq3[k]) ? residueScore : misMatchPenalty;
 
-        var matches_1 = (_12 > 0 || _13 > 0) ? "y" : "n",
+        //Handle match cases for coloring
+        var matches_1 = (_12 > 0 && _13 > 0) ? "Y" : (_12 > 0 || _13 > 0) ? "y" : "n",
           matches_1_no_2 = (_13 > 0) ? "y" : "n",
           matches_1_no_3 = (_12 > 0) ? "y" : "n",
-          matches_2 = (_12 > 0 || _23 > 0) ? "y" : "n",
+          matches_2 = matches_1 == "Y" ? "Y" : (_12 > 0 || _23 > 0) ? "y" : "n",
           matches_2_no_1 = (_23 > 0) ? "y" : "n",
           matches_2_no_3 = (_12 > 0) ? "y" : "n",
-          matches_3 = (_13 > 0 || _23 > 0) ? "y" : "n";
+          matches_3 = matches_1 == "Y" ? "Y" : (_13 > 0 || _23 > 0) ? "y" : "n";
           matches_3_no_1 = (_23 > 0) ? "y" : "n";
           matches_3_no_2 = (_13 > 0) ? "y" : "n";
 
+        //Find scores
         var diag = oldDiag + _12 + _13 + _23;
           gap1 = oldGap1 + gapPenalty + _23,
           gap2 = oldGap2 + gapPenalty + _13,

@@ -8,6 +8,8 @@ The alignment algorithm is an implementation of the algorithm form the tutorial 
 #### Display
 I decided to start with the most basic visualization of these sequences: displaying them as text stacked on top of each other. I then highlighted matches with blue and mismatches with red, to make it very apparent where each of these were (gaps were indicated by a '-' with no color, making them equally apparent). The use of color worked well because larger matched groups were made easily apparent by the contiguous areas of color.
 
+Full matches (where all three are the same) are slighly darker than other matches to make them more pronounced.
+
 To allow for arbitrarily long input, I made the text scale to fit the entire sequences. While this would eventually make the text unreadable, the relationship between the sequences would still be apparent from the colors. I added the ability to highlight a section of the sequences and see that in detail, which would allow the user to investigate the exact contents of an area of interest even in a very large dataset.
 
 #### Free-Form
